@@ -1,86 +1,100 @@
-# Spark Cluster Docker
+# Spark Cluster Docker (Fork)
 
-Powered by [Rock the JVM](https://rockthejvm.com)
+This repository is a **fork** of the original [Spark Cluster Docker](https://github.com/rockthejvm/spark-cluster-docker) created by [Rock the JVM](https://rockthejvm.com).
 
-This repository contains the Docker files to create a Spark cluster with a JupyterLab interface. This cluster is used as a teaching tool for the Rock the JVM online courses and live training sessions on Apache Spark:
+**Modifications in this fork:**
 
-- [Spark Essentials](https://rockthejvm.com/p/spark-essentials)
-- [Spark Optimization](https://rockthejvm.com/p/spark-optimization)
-- [Spark Performance Tuning](https://rockthejvm.com/p/spark-performance-tuning)
-- plus corporate training sessions on the above
+*   **Added MinIO Support:** Integrated a MinIO service (`minio/minio`) into the `docker-compose.yml` setup to provide an S3-compatible local object storage solution.
+*   **Spark S3A Configuration:** Configured the Spark images (`jupyter-spark-base`, `jupyterlab`) with the necessary `hadoop-aws` and `aws-java-sdk-bundle` JARs and default S3A settings in `spark-defaults.conf` and `core-site.xml` to connect to the local MinIO instance via `s3a://` paths.
+*  The cluster is set up for Spark 3.1.3 (updated from original 3.0.0). 
+*    **Integrated `boto3` for MinIO Interaction:** The `jupyterlab` Docker image now includes `boto3`, the official AWS SDK for Python. This allows you to interact programmatically with the MinIO service directly from your Jupyter notebooks. You can use `boto3` to:
+    *   Create buckets (as shown in example notebooks, reading credentials from environment variables).
+    *   List buckets and objects.
+    *   Upload or download files directly (though Spark's `s3a://` connector is typically used for data processing).
+    *   Manage other S3-compatible operations.
 
-The cluster is set up for Spark 3.0.0.
+---
 
-## How to Install
 
-As prerequisite, you need a Docker installation for your OS. This repository has been tested on Linux and macOS, but with a Bash interpreter it can also work on Windows as it is.
+## How to Run Locally
 
-Then, you need to build the Docker images. This repository contains image definitions for
+**Prerequisites:**
 
-- a JupyterLab interface
-- a Spark master node
-- a Spark worker node (of which we'll instantiate two, each carrying 2 vCores and 1GB memory)
+*   Docker and Docker Compose installed on your OS.
 
-To build the images, run the build script from the root directory:
+**Steps:**
 
-```
-./build-images.sh
-```
+1.  **Clone The Repo:**
+    ```bash
+    git clone git@github.com:vasevooo/spark-cluster-docker-with-minio.git
+    cd spark-cluster-docker-with-minio
+    ```
 
-After the command is finished, still in the root directory, run
+2.  **Build Docker Images:**
+    This script builds the base images, Spark master/worker, JupyterLab (with S3 support), etc.
+    ```bash
+    ./build-images.sh
+    ```
+    *(This might take some time, especially the first time.)*
 
-```
-docker-compose up
-```
+3.  **Start the Services:**
+    This command starts the Spark master, workers, JupyterLab, PostgreSQL, and the MinIO service in detached mode (`-d`).
+    ```bash
+    docker-compose up -d
+    ```
 
-That's it!
+4.  **Access Services:**
+    *   **JupyterLab:** http://localhost:8888
+    *   **MinIO Console:** http://localhost:9001 (Log in with credentials from `docker-compose.yml`)
+    *   **Spark Master UI:** http://localhost:8080
+    *   Spark Worker UIs: http://localhost:8081, http://localhost:8082 
+    *   Spark Application UI (when running a job): http://localhost:4040
 
-## Important Links
+5.  **(Optional) Create MinIO Bucket:**
+    *   If not using automatic creation (e.g., via `boto3` in a notebook), log into the MinIO Console (http://localhost:9001) and create a bucket (e.g., `test-bucket`) before trying to write to it from Spark.
 
-- The main JupyterLab interface: http://localhost:8888
-- The Spark cluster UI (master node): http://localhost:8080
-- The Spark cluster UI (worker node): http://localhost:8081 and http://localhost:8082
-- The Spark application web UI (active during a Spark Shell): http://localhost:4040
+6.  **Stop the Services:**
+    ```bash
+    docker-compose down
+    ```
+    *(Use `docker-compose down -v` to also remove the data volumes like `minio-data` and `shared-workspace` if you want a completely clean start next time).*
+
 
 ## Other Tools
 
-To kill the cluster, hit Ctrl-C in the terminal running it, or run this command from another terminal in the root directory:
 
-```
+To kill the cluster without stopping the containers gracefully, hit Ctrl-C in the terminal running `docker-compose up` (if not detached), or run this command from another terminal:
+```bash
 docker-compose kill
 ```
 
-To remove the containers altogether, run in the root directory
-
-```
+To remove the containers (but not necessarily volumes), run:
+```bash
 docker-compose rm
 ```
 
-To start a (Scala) Spark Shell, run
-
-```
+To start a (Scala) Spark Shell:
+```bash
 ./start-spark-shell.sh
 ```
 
-To start a PySpark shell, run
-
-```
+To start a PySpark shell:
+```bash
 ./start-pyspark.sh
 ```
 
-To start a Spark SQL shell, run
-
-```
+To start a Spark SQL shell:
+```bash
 ./start-spark-sql.sh
 ```
 
 ## PostgreSQL
 
+*(Keep PostgreSQL section)*
 This setup also has a SQL database (PostgreSQL) for students to access from Apache Spark. The database comes preloaded with a smaller version of the classical fictitious "employees" database.
 
-To open a PSQL shell and manage the database manually, run the helper script
-
-```
+To open a PSQL shell and manage the database manually, run the helper script:
+```bash
 ./psql.sh
 ```
 
@@ -88,12 +102,12 @@ To open a PSQL shell and manage the database manually, run the helper script
 
 You have two options:
 
-1. Use the JupyterLab upload interface while it's active.
-2. Copy your data to `shared-workspace` &mdash; the directory is auto-mounted on all the containers.
+1.  Use the JupyterLab upload interface while it's active.
+2.  Copy your data to `shared-workspace` &mdash; the directory is auto-mounted on all the containers.
 
 ## How to port your notebooks to another Jupyter instance
 
 Similar options:
 
-1. Use the JupyterLab interface to download your notebooks as `.ipynb` files.
-2. Copy the `.ipynb` files directly from the `shared-workspace` directory: everything you save will be immediately visible there.
+1.  Use the JupyterLab interface to download your notebooks as `.ipynb` files.
+2.  Copy the `.ipynb` files directly from the `shared-workspace` directory: everything you save will be immediately visible there.
