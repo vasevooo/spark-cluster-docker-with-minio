@@ -9,6 +9,7 @@ volumes:
     driver: local
   airflow-logs-volume:
     driver: local
+  postgres_data:
 services:
   jupyterlab:
     image: jupyterlab
