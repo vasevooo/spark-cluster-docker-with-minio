@@ -49,6 +49,7 @@ This repository is a **fork** of the original [Spark Cluster Docker](https://git
     *   **Spark Master UI:** http://localhost:8080
     *   Spark Worker UIs: http://localhost:8081, http://localhost:8082 
     *   Spark Application UI (when running a job): http://localhost:4040
+    *   Airflow UI: http://localhost:8085 (login with credentials entered after init, admin\admin by default)
 
 5.  **(Optional) Create MinIO Bucket:**
     *   If not using automatic creation (e.g., via `boto3` in a notebook), log into the MinIO Console (http://localhost:9001) and create a bucket (e.g., `test-bucket`) before trying to write to it from Spark.
@@ -97,6 +98,26 @@ To open a PSQL shell and manage the database manually, run the helper script:
 ```bash
 ./psql.sh
 ```
+
+## Airflow
+Init airflow first:
+
+```
+docker-compose run --rm airflow-webserver airflow db init
+```
+
+Create airflow user (docker -> airflow container -> terminal):
+```
+airflow users create --username admin --firstname admin --lastname admin --role Admin --email admin@example.com --password admin
+```
+
+Create Airflow connection for SparkSubmitOperator (Airflow -> connections -> new)
+Name: spark_connection, 
+Type: Spark, 
+Host: spark://jupyter-spark-master, 
+Port: 7077
+
+Don't forget to add variables for S3 connection (see example DAG).
 
 ## How to upload data to the Spark cluster
 
