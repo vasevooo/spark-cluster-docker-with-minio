@@ -33,9 +33,11 @@ This repository is a **fork** of the original [Spark Cluster Docker](https://git
 2.  **Build Docker Images:**
     This script builds the base images, Spark master/worker, JupyterLab (with S3 support), etc.
     ```bash
-    ./build-images.sh
+    ./build-images.sh 
     ```
-    *(This might take some time, especially the first time.)*
+    *(This might take some time, especially the first time.)* 
+
+    *(build-images.bat also works for windows)*
 
 3.  **Start the Services:**
     This command starts the Spark master, workers, JupyterLab, PostgreSQL, and the MinIO service in detached mode (`-d`).
@@ -117,7 +119,7 @@ Type: Spark,
 Host: spark://jupyter-spark-master, 
 Port: 7077
 
-Don't forget to add variables for S3 connection (see example DAG).
+Don't forget to add access variables for S3 connection (see example DAG).
 
 ## How to upload data to the Spark cluster
 

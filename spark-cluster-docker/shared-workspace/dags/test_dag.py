@@ -34,10 +34,10 @@ with DAG(
             "spark.jars.repositories": "https://mmlspark.azureedge.net/maven",
             "spark.jars.packages": "org.apache.hadoop:hadoop-aws:3.2.0,org.apache.hadoop:hadoop-common:3.2.0",
             "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
-            "spark.hadoop.fs.s3a.endpoint": Variable.get("s3_endpoint"),
-            "spark.hadoop.fs.s3a.access.key": Variable.get("s3_access_key"),
+            "spark.hadoop.fs.s3a.endpoint": Variable.get("s3_endpoint_url"),
+            "spark.hadoop.fs.s3a.access.key": Variable.get("s3_key"),
             'spark.hadoop.fs.s3a.aws.credentials.provider': 'org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider',
-            "spark.hadoop.fs.s3a.secret.key": Variable.get("s3_secret_key")
+            "spark.hadoop.fs.s3a.secret.key": Variable.get("s3_secret")
         },
     )
 
